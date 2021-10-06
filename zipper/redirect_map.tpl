@@ -1,4 +1,5 @@
 map $request_uri $redirect_uri {
-    %s
+
+%s
 
 }
