@@ -91,8 +91,15 @@ def add(c, url):
     if _uri:
         print('already zipper this URI as:\n\t{}'.format(_uri))
     else:
-        _zip = shortuuid.ShortUUID().random(length=4)
-        ic(_zip)
+        
+        while True:
+            _zip = shortuuid.ShortUUID().random(length=4)
+            if _ask_code(_zip):
+                ic('gen. double CODE, re-try...')
+                continue
+            else:
+                ic(_zip)
+                break
         _upd_map(url,_zip)
         with open(MAPKL, 'wb') as f:
             # Pickle the 'data' dictionary using the highest protocol available.
