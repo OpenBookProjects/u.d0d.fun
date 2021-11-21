@@ -21,6 +21,7 @@ Nginx 重定向
 
 ## loagging
 
+- 211121 ZQ append The Web Robots Pages http://www.robotstxt.org/robotstxt.html
 - 210902 ZQ init.
 - 201225 ZQ want
 

@@ -124,7 +124,7 @@ def add(c, url):
                 ic(_zip)
                 break
         _upd_map(url,_zip)
-        print('usage:\t{}{}'.format(UROOT,_zip))
+        print('usage:\t{}/{}'.format(UROOT,_zip))
         with open(MAPKL, 'wb') as f:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickle.dump(URIMAP, f, pickle.HIGHEST_PROTOCOL)
