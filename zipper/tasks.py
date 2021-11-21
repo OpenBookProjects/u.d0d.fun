@@ -6,7 +6,7 @@ and support:
 + list all zipped URI-code 
 + ...
 '''
-VER = 'zipper v.21107.1652'
+VER = 'zipper v.21117.2242'
 
 import os
 import sys
@@ -28,6 +28,7 @@ install()
 ic.configureOutput(prefix='ic|>')
 
 SROOT = os.path.dirname(os.path.abspath(__file__))
+UROOT = "http://u.d0d.fun"
 TPLMAP = "redirect_map.tpl"
 MAPCFG = "redirect_map.conf"
 MAPKL = "redirect_map.pkl"
@@ -63,6 +64,17 @@ def cd(c, path2, echo=True):
         c.run('echo \n')
 
 
+def _del_uri(uri,code):
+    #{"U2Z":{},"Z4U":{}}
+    #ic(type(URIMAP['U2Z']))
+    if uri in URIMAP['U2Z']:
+        URIMAP['U2Z'].pop(uri) 
+        URIMAP['Z4U'].pop(code)
+        print("deleted {} for {}".format(code,uri))
+    else:
+        print("NOT EXIST {} -> {}".format(code,uri))
+    return None
+
 def _upd_map(uri,code):
     #{"U2Z":{},"Z4U":{}}
     URIMAP['U2Z'][uri] = code
@@ -82,6 +94,17 @@ def _ask_uri(uri):
         return None
 
 @task 
+def rm(c, url,code):
+    '''del "URI" "code" ~ drop URI-code
+    '''
+    #ic(url)
+    _del_uri(url,code)
+    #ic(shortuuid.get_alphabet())
+    with open(MAPKL, 'wb') as f:
+        # Pickle the 'data' dictionary using the highest protocol available.
+        pickle.dump(URIMAP, f, pickle.HIGHEST_PROTOCOL)
+
+@task 
 def add(c, url):
     '''add "URI" ~ gen. zip code for URL
     '''
@@ -89,7 +112,7 @@ def add(c, url):
     #ic(shortuuid.get_alphabet())
     _uri = _ask_uri(url)
     if _uri:
-        print('already zipper this URI as:\n\t{}'.format(_uri))
+        print('already zipper this URI:\n\t{}\nas:\n\t{}'.format(url,_uri))
     else:
         
         while True:
@@ -101,6 +124,7 @@ def add(c, url):
                 ic(_zip)
                 break
         _upd_map(url,_zip)
+        print('usage:\t{}{}'.format(UROOT,_zip))
         with open(MAPKL, 'wb') as f:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickle.dump(URIMAP, f, pickle.HIGHEST_PROTOCOL)
@@ -112,7 +136,8 @@ def chk(c, url):
     '''
     ic(url)
     #ic(URIMAP)
-    ic(_ask_uri(url))
+    _zip = _ask_uri(url)
+    print("\t~> {}/{}".format(UROOT,_zip))
     return None
 
 
@@ -121,8 +146,10 @@ def upd(c, url, code):
     '''upd "URI" "code" ~ upgrade zip code of URL as give
     '''
     ic('upgrade URI mapping as')
-    ic(url,code)
+    #ic(url,code)
     _upd_map(url,code)
+    print("{}\n\t~> {}/{}".format(url,UROOT,code))
+
     with open(MAPKL, 'wb') as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(URIMAP, f, pickle.HIGHEST_PROTOCOL)
@@ -139,12 +166,13 @@ def exp(c):
     _cfg = ""
     _mapline = "    /{}  {} ;\n"
     _exp = ""
-    _ziplist = "http://u.d0d.fun/{}  {}\n"
+    _ziplist = "%s/{}  {}\n"%UROOT
     for u in URIMAP['U2Z']:
         #ic(u,URIMAP['U2Z'][u])
         _cfg += _mapline.format(URIMAP['U2Z'][u],u)
         _exp += _ziplist.format(URIMAP['U2Z'][u],u)
     #ic(_cfg)
+    ic("will make Nginx point these URI mapping:")
     print(_exp)
     #return None
     open(MAPCFG,"w").write(_tpl%_cfg)
@@ -154,6 +182,19 @@ def exp(c):
     c.run(_cmd)
     return None
     
+@task 
+def la(c):
+    '''export all zippered URI
+    '''
+    _exp = "zipper mapping URI:\n\n"
+    for u in URIMAP['U2Z']:
+        _exp += "{}\n\t~> {}/{}\n".format(u,UROOT,URIMAP['U2Z'][u])
+        #ic(u,URIMAP['U2Z'][u])
+        #_cfg += _mapline.format(URIMAP['U2Z'][u],u)
+        #_exp += _ziplist.format(URIMAP['U2Z'][u],u)
+    #ic(_cfg)
+    print(_exp)
+    return None
 
 
 
